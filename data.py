@@ -76,3 +76,4 @@ root = Tk()
 root.geometry("400x200")  # 设置选项窗口大小
 student = Student("test1", Position(45, 452.5), "2021.4.3", "", "", Position(317, 427.5), Position(355, 480), 1, 1)
 path = []  # 路径
+pass_building = []  # 途径建筑

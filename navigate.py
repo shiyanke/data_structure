@@ -3,6 +3,7 @@ import data
 from tkinter import *
 import math
 import output as out
+import tkinter.messagebox
 
 
 def navigate():
@@ -27,15 +28,20 @@ def navigate():
     radio2.grid(row=2, column=1)
     radio3 = Radiobutton(root_navigator, text="策略三", variable=radio, value=3)
     radio3.grid(row=2, column=2)
+    radio4 = Radiobutton(root_navigator, text="策略四", variable=radio, value=4)
+    radio4.grid(row=2, column=3)
 
     def submit():
         student.start = e_start.get()
         student.end = e_end.get()
         student.strategy = radio.get()
         root_navigator.destroy()
-        navigator_one_campus()
+        if student.strategy in [1, 2, 3]:
+            navigator_one_campus()
+        elif student.strategy == 4:
+            input_pass_building()
     b_submit = Button(root_navigator, text='确定', command=submit)
-    b_submit.grid(row=2, column=3)
+    b_submit.grid(row=2, column=4)
     root_navigator.mainloop()
     return
 
@@ -51,6 +57,7 @@ def navigator_one_campus():
     print(student.start)
     print(student.end)
     print(student.strategy)
+    print(pass_building)
     out.imaging(campus[1])
     return
 
@@ -198,3 +205,23 @@ def shortest_path_incampus_method1():#传参数 method
     return
 
 
+def input_pass_building():
+    root_input_pass = Tk()
+    root_input_pass.geometry("400x200")
+    l_input_pass = Label(root_input_pass, text='途径地点：')
+    l_input_pass.grid(row=0, sticky=W)
+    e_input_pass = Entry(root_input_pass)
+    e_input_pass.grid(row=0, column=1, sticky=E)
+
+    def add_pass():
+        pass_building.append(e_input_pass.get())
+        tkinter.messagebox.askokcancel(title='添加', message='添加成功！')
+    b_add_pass = Button(root_input_pass, text='添加', command=add_pass)
+    b_add_pass.grid(row=0, column=2)
+
+    def jump_to_navigate():
+        root_input_pass.destroy()
+        navigator_one_campus()
+    b_jump = Button(root_input_pass, text='确定', command=jump_to_navigate)
+    b_jump.grid(row=0, column=3)
+    return

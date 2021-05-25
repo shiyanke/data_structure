@@ -4,6 +4,8 @@ from tkinter import *
 import math
 import output as out
 import tkinter.messagebox
+import query
+import copy
 
 
 def navigate():
@@ -66,8 +68,7 @@ def navigator_two_campus():
     return
 
 
-def shortest_path_incampus_method1():#传参数 method
-    method = 2
+def shortest_path_incampus_method1(method):#传参数 method
     '''传参数1.最短路径 2.最短时间 3.最短自行车时间'''
     node_end = Node(0, Position(0, 0))
     node_start = Node(0, Position(0, 0))
@@ -199,10 +200,79 @@ def shortest_path_incampus_method1():#传参数 method
             campus[student.which_campus].road.pop()
             campus[student.which_campus].road.pop()
             campus[student.which_campus].road.append(road_store)
-        campus[student.which_campus].node.pop()
+            campus[student.which_campus].node.pop()
     else:
         path.clear()
     return
+
+def search_point(s):#返回入口与一个校区
+    list = []
+    for element in campus[0].building:
+        if s == element.name or s in element.nickname:
+            list.append(element.door[0])
+            list.append(0)
+            return list
+    for element in campus[1].building:
+        if s == element.name or s in element.nickname:
+            list.append(element.door[0])
+            list.append(1)
+            return list
+
+def shortest_passing_by():
+    pass_node = []
+    start_head = student.start_position
+    start_tail = student.end_position
+    pass_node_test = []
+    pass_node_dis = []
+    distance = []
+    path_get_frhead = []
+    path_get_frtail = []
+    for s in pass_building:
+        pass_node.append(search_point(s)[0])
+    while pass_node != []:
+        student.start_position = start_head
+        for node in pass_node:
+            student.end_position = node.position
+            data.path.clear()
+            shortest_path_incampus_method1(1)
+            distance.append(query.calculate_shotest_distance())#[d1 d2 ...]
+            pass_node_test.append(node)
+            pass_node_dis.append(copy.deepcopy(path)) #[[][]...[p1 p2...]]
+        index = distance.index(min(distance))
+        path_get_frhead.extend(pass_node_dis[index])
+        start_head = pass_node_test[index].position
+        path_get_frhead.pop()
+        pass_node.remove(pass_node_test[index])
+        distance.clear();pass_node_dis.clear();pass_node_test.clear()
+
+        if pass_node != []:
+            student.start_position = start_tail
+            for node in pass_node:
+                student.end_position = node.position
+                data.path.clear()
+                shortest_path_incampus_method1(1)
+                distance.append(query.calculate_shotest_distance())  # [d1 d2 ...]
+                pass_node_test.append(node)
+                pass_node_dis.append(copy.deepcopy(path))  # [[][]...[p1 p2...]]
+            index = distance.index(min(distance))
+            path_get_frtail.extend(pass_node_dis[index])
+            start_tail = pass_node_test[index].position
+            path_get_frtail.pop()
+            pass_node.remove(pass_node_test[index])
+            distance.clear();pass_node_dis.clear();pass_node_test.clear()
+    student.start_position = start_head
+    student.end_position = start_tail
+    data.path.clear()
+    shortest_path_incampus_method1(1)
+    path_get_frhead.extend(path)
+    path_get_frtail.reverse()
+    path_get_frhead.extend(path_get_frtail)
+    data.path.clear()
+    data.path.extend(path_get_frhead)
+
+
+
+
 
 
 def input_pass_building():

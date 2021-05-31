@@ -8,7 +8,6 @@ import query
 def main():
     '''数据初始化'''
     init.initialize()
-    navigate.shortest_path_incampus_method1()
     '''功能选择界面'''
     navigate_button = Button(root, text="导航", command=navigate.navigate)
     query_button = Button(root, text="查询", command=query.query)

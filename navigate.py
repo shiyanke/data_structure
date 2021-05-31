@@ -6,7 +6,8 @@ import output as out
 import tkinter.messagebox
 import query
 import copy
-
+import datetime
+import time
 
 def navigate():
     print("in navigate")
@@ -39,7 +40,7 @@ def navigate():
         student.strategy = radio.get()
         root_navigator.destroy()
         if student.strategy in [1, 2, 3]:
-            navigator_one_campus()
+            navigator_mode()
         elif student.strategy == 4:
             input_pass_building()
     b_submit = Button(root_navigator, text='确定', command=submit)
@@ -49,10 +50,16 @@ def navigate():
 
 
 def navigator_mode():
-    '''
-    校区内return一种值
-    校区间return一种值
-    '''
+    start = search_point(student.start)
+    end = search_point(student.end)
+    student.start_position = start[0]
+    student.end_position = end[0]
+    if start[1] == end[1]:
+        navigator_one_campus()
+    else:
+        #输入校区间乘坐交通工具的选择
+        bus_choice = 0
+        navigator_two_campus(bus_choice)
 
 
 def navigator_one_campus():
@@ -64,7 +71,13 @@ def navigator_one_campus():
     return
 
 
-def navigator_two_campus():
+def navigator_two_campus(bus_choice):
+    #第一地点的输入处理（到距离最短的校门）
+    #校区内导航
+    #校区间导航
+    between_campus_simulate(bus_choice)
+    # 第二地点的输入处理（到距离最短的校门）
+    # 校区内导航
     return
 
 
@@ -294,4 +307,58 @@ def input_pass_building():
         navigator_one_campus()
     b_jump = Button(root_input_pass, text='确定', command=jump_to_navigate)
     b_jump.grid(row=0, column=3)
+    return
+
+
+def between_campus_simulate(bus_choice):
+    idx = 0
+    for i in bus_table[bus_choice].time:
+        if i > student.time:
+            break
+        else:
+            idx += 1
+    wait_time = str(bus_table[bus_choice].time[idx]-student.time)
+    #等待状态(包含等车和在车上的时间)
+    time_count(wait_time, "车已到达!", bus_table[bus_choice].time_cost)
+    #改变student的时间
+
+    return
+
+
+def to_s(t):
+    h, m, s = t.strip().split(":")
+    return int(h) * 3600 + int(m) * 60 + int(s)
+
+
+def time_count(delta_time, show_msg, time_cost):
+    print(delta_time)
+    root_navigator_tmp = Tk()
+    root_navigator_tmp.title("倒计时")
+    root_navigator_tmp.geometry("400x200")
+    time_sec = to_s(delta_time)
+    all_time = Label(root_navigator_tmp, text='总计时间：'+str(delta_time))
+    all_time.grid(row=0, column=0)
+
+    def foo(times):
+        times = times - 1
+        clock = but.after(1000, foo, times)
+        if times == 0:
+            but.after_cancel(clock)
+            tkinter.messagebox.askokcancel(title='到达', message=show_msg)
+            if time_cost != 0:
+                minute, second = (time_cost // 60, time_cost % 60)
+                hour = 0
+                if minute > 60:
+                    hour, minute = (minute // 60, minute % 60)
+                time_count(str(hour) + ":" + str(minute) + ":" + str(second), "已到站", 0)
+            root_navigator_tmp.destroy()
+        else:
+            minute, second = (times // 60, times % 60)
+            hour = 0
+            if minute > 60:
+                hour, minute = (minute // 60, minute % 60)
+            but["text"] = '剩余时间：'+str(hour)+":"+str(minute)+":"+str(second)
+    but = Button(root_navigator_tmp, text="", width=20)
+    but.grid(row=1, column=0)
+    foo(time_sec)
     return

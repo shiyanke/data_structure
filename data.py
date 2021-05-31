@@ -51,7 +51,7 @@ class Student:
 
 class Bus:
     def __init__(self, bus_type, time, distance, time_cost):
-        self.bus_type = bus_type  #车类型
+        self.bus_type = bus_type  #车类型  0为定点班车，1为公共汽车
         self.time = time  #班车车次时间，字符串集合
         self.distance = distance
         self.time_cost = time_cost   #时间开销
@@ -77,3 +77,4 @@ root.geometry("400x200")  # 设置选项窗口大小
 student = Student("test1", Position(45, 452.5), "2021.4.3", "", "", Position(317, 427.5), Position(355, 480), 1, 1)
 path = []  # 路径
 pass_building = []  # 途径建筑
+bus_table = []  #车次表

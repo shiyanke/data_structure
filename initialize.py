@@ -1,5 +1,5 @@
 from data import *
-
+import datetime
 
 def initialize():
     initialize_map()
@@ -13,7 +13,8 @@ def initialize_map():
     campus_haidian = Campus([], [], [])
     '''沙河校区数据初始化'''
     campus_shahe.node.append(Node(0, Position(30, 452.5)))
-
+    campus_shahe.road.append(Road(0, [Node(4, Position(152.5, 475)), Node(107, Position(152.5, 500))], 1, 25, 1))
+    campus_shahe.building.append(Building(67, "测试", Position(182.5, 72), [Node(101, Position(152.5, 67.5)),Node(81, Position(182.5, 100))], [], "h", 7))
 
     '''zhengnaiyu'''
 
@@ -361,9 +362,20 @@ def initialize_map():
 
 
 def initialize_student():
-
+    student.time = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 29, 55)
     return
 
 
 def initialize_bus():
+    year = datetime.datetime.now().year
+    month = datetime.datetime.now().month
+    day = datetime.datetime.now().day
+    time_list1 = []
+    time_list1.append(datetime.datetime(year, month, day, 7, 00, 00))
+    time_list1.append(datetime.datetime(year, month, day, 7, 30, 00))
+    #时间表添加
+    bus_table.append(Bus(0, time_list1, 10, 10))
+    time_list2 = []
+    #时间表添加
+    bus_table.append(Bus(1, time_list2, 2000, 15))
     return

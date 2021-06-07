@@ -43,33 +43,62 @@ def navigate():
             navigator_mode()
         elif student.strategy == 4:
             input_pass_building()
-    b_submit = Button(root_navigator, text='确定', command=submit)
-    b_submit.grid(row=2, column=4)
-    root_navigator.mainloop()
-    return
 
+    b_submit = Button(root_navigator, text='确定', command=submit)
+    b_submit.grid(row=3, sticky=E)
+    root_navigator.mainloop()
+    #print("asddasdasdasdasdasdasdas")
+    return
 
 def navigator_mode():
     start = search_point(student.start)
     end = search_point(student.end)
-    student.start_position = start[0]
-    student.end_position = end[0]
+    #判断输入点是否存在
+    if (start[1] == -1) or (end[1] == -1):
+        return
+    student.start_position = start[0].position
+    student.end_position = end[0].position
     if start[1] == end[1]:
+        print("起点终点在同一校区内")
+        student.which_campus = int(start[1])
         navigator_one_campus()
     else:
+        print("起点终点在不同校区内")
         #输入校区间乘坐交通工具的选择
         bus_choice = 0
         navigator_two_campus(bus_choice)
 
+    #for path_pass in path:
+    #    print(path_pass)
 
 def navigator_one_campus():
     print(student.start)
+    print(student.start_position)
     print(student.end)
+    print(student.end_position)
     print(student.strategy)
-    print(pass_building)
-    out.imaging(campus[1])
-    return
+    #print(pass_building)
+    #out.imaging(campus[0])
+    if student.strategy in [1, 2, 3]:
+        shortest_path_incampus_method1(student.strategy)
+    elif student.strategy == 4:
+        shortest_passing_by()
 
+    for j in range(len(path) - 1):
+        for road_pass in campus[student.which_campus].road:
+            if (path[j] in road_pass.endpoint) and (path[j + 1] in road_pass.endpoint):
+                road.append(road_pass)
+                break
+    #for j in road:
+    #    print(j.number)
+    s = 0
+    out.imaging_path(campus[student.which_campus], path, road)
+
+    s = 1
+    path.clear()
+    road.clear()
+    #print("path road clear")
+    return
 
 def navigator_two_campus(bus_choice):
     #第一地点的输入处理（到距离最短的校门）
@@ -80,6 +109,99 @@ def navigator_two_campus(bus_choice):
     # 校区内导航
     return
 
+def search_point(s):#返回入口与一个校区
+    list = []
+    #遍历沙河
+    for element in campus[0].building:
+        if s == element.name or s in element.nickname:
+            list.append(element.door[0])
+            list.append(0)
+            return list
+    #遍历海淀
+    for element in campus[1].building:
+        if s == element.name or s in element.nickname:
+            list.append(element.door[0])
+            list.append(1)
+            return list
+
+    print("起点或终点输入无效，请重新输入")
+    list.append(Position(-1, -1))
+    list.append(-1)
+    return list
+
+def input_pass_building():
+    root_input_pass = Tk()
+    root_input_pass.geometry("400x200")
+    l_input_pass = Label(root_input_pass, text='途径地点：')
+    l_input_pass.grid(row=0, sticky=W)
+    e_input_pass = Entry(root_input_pass)
+    e_input_pass.grid(row=0, column=1, sticky=E)
+
+    def add_pass():
+        pass_building.append(e_input_pass.get())
+        tkinter.messagebox.askokcancel(title='添加', message='添加成功！')
+
+    b_add_pass = Button(root_input_pass, text='添加', command=add_pass)
+    b_add_pass.grid(row=0, column=2)
+
+    def jump_to_navigate():
+        root_input_pass.destroy()
+        navigator_one_campus()
+
+    b_jump = Button(root_input_pass, text='确定', command=jump_to_navigate)
+    b_jump.grid(row=0, column=3)
+    return
+
+def between_campus_simulate(bus_choice):
+    idx = 0
+    for i in bus_table[bus_choice].time:
+        if i > student.time:
+            break
+        else:
+            idx += 1
+    wait_time = str(bus_table[bus_choice].time[idx]-student.time)
+    #等待状态(包含等车和在车上的时间)
+    time_count(wait_time, "车已到达!", bus_table[bus_choice].time_cost)
+    #改变student的时间
+
+    return
+
+def to_s(t):
+    h, m, s = t.strip().split(":")
+    return int(h) * 3600 + int(m) * 60 + int(s)
+
+def time_count(delta_time, show_msg, time_cost):
+    print(delta_time)
+    root_navigator_tmp = Tk()
+    root_navigator_tmp.title("倒计时")
+    root_navigator_tmp.geometry("400x200")
+    time_sec = to_s(delta_time)
+    all_time = Label(root_navigator_tmp, text='总计时间：'+str(delta_time))
+    all_time.grid(row=0, column=0)
+
+    def foo(times):
+        times = times - 1
+        clock = but.after(1000, foo, times)
+        if times == 0:
+            but.after_cancel(clock)
+            tkinter.messagebox.askokcancel(title='到达', message=show_msg)
+            if time_cost != 0:
+                minute, second = (time_cost // 60, time_cost % 60)
+                hour = 0
+                if minute > 60:
+                    hour, minute = (minute // 60, minute % 60)
+                time_count(str(hour) + ":" + str(minute) + ":" + str(second), "已到站", 0)
+            root_navigator_tmp.destroy()
+        else:
+            minute, second = (times // 60, times % 60)
+            hour = 0
+            if minute > 60:
+                hour, minute = (minute // 60, minute % 60)
+            but["text"] = '剩余时间：'+str(hour)+":"+str(minute)+":"+str(second)
+    but = Button(root_navigator_tmp, text="", width=20)
+    but.grid(row=1, column=0)
+    foo(time_sec)
+    return
 
 def shortest_path_incampus_method1(method):#传参数 method
     '''传参数1.最短路径 2.最短时间 3.最短自行车时间'''
@@ -100,20 +222,12 @@ def shortest_path_incampus_method1(method):#传参数 method
         node_start = campus[student.which_campus].node[node_number + 1]#起始点，终止点
         road_store = Road(-1, [Position(0, 0), Position(0, 0)], 0, 0, 0)
         for road in campus[student.which_campus].road:
-            if ((road.endpoint[0].position.x == node_start.position.x and road.endpoint[1].position.x == node_start.position.x) and \
-                ((road.endpoint[0].position.y > node_start.position.y and node_start.position.y > road.endpoint[1].position.y) or\
-                 (road.endpoint[0].position.y < node_start.position.y and node_start.position.y <road.endpoint[1].position.y))) or \
-                    ((road.endpoint[0].position.y == node_start.position.y and road.endpoint[1].position.y == node_start.position.y) and\
-                     ((road.endpoint[0].position.x > node_start.position.x and node_start.position.x > road.endpoint[1].position.x)or\
-                      (road.endpoint[0].position.x < node_start.position.x and node_start.position.x < road.endpoint[1].position.x))):
+            if  (road.endpoint[0].position.x-node_start.position.x)*(road.endpoint[1].position.x-node_start.position.x)<=0.001 and (road.endpoint[0].position.y-node_start.position.y)*(road.endpoint[1].position.y-node_start.position.y)<=0.001 and math.isclose((road.endpoint[0].position.y-node_start.position.y)*(node_start.position.x-road.endpoint[1].position.x), (node_start.position.y-road.endpoint[1].position.y)*(road.endpoint[0].position.x-node_start.position.x), rel_tol=0.001):
                 road_store = road
-                campus[student.which_campus].road.append(Road(131, [road.endpoint[0], node_start], road.degree_of_congestion \
-                                                              , ((road.endpoint[0].position.x - node_start.position.x) ** 2 \
-                                                                + (road.endpoint[0].position.y - node_start.position.y) ** 2) ** 0.5, road.if_bike))
-                campus[student.which_campus].road.append(Road(132, [road.endpoint[1], node_start], road.degree_of_congestion \
-                                                              , ((road.endpoint[1].position.x - node_start.position.x) ** 2 \
-                                                                + (road.endpoint[1].position.y - node_start.position.y) ** 2) ** 0.5, road.if_bike))
+                campus[student.which_campus].road.append(Road(131, [road.endpoint[0], node_start], road.degree_of_congestion , ((road.endpoint[0].position.x - node_start.position.x) ** 2 + (road.endpoint[0].position.y - node_start.position.y) ** 2) ** 0.5, road.if_bike))
+                campus[student.which_campus].road.append(Road(132, [road.endpoint[1], node_start], road.degree_of_congestion , ((road.endpoint[1].position.x - node_start.position.x) ** 2 + (road.endpoint[1].position.y - node_start.position.y) ** 2) ** 0.5, road.if_bike))
                 campus[student.which_campus].road.remove(road)
+                break
         node_number += 1
     dist = []#存距离
     path_get = []#前一个表存点，后一个表存路
@@ -218,19 +332,6 @@ def shortest_path_incampus_method1(method):#传参数 method
         path.clear()
     return
 
-def search_point(s):#返回入口与一个校区
-    list = []
-    for element in campus[0].building:
-        if s == element.name or s in element.nickname:
-            list.append(element.door[0])
-            list.append(0)
-            return list
-    for element in campus[1].building:
-        if s == element.name or s in element.nickname:
-            list.append(element.door[0])
-            list.append(1)
-            return list
-
 def shortest_passing_by():
     pass_node = []
     start_head = student.start_position
@@ -282,83 +383,3 @@ def shortest_passing_by():
     path_get_frhead.extend(path_get_frtail)
     data.path.clear()
     data.path.extend(path_get_frhead)
-
-
-
-
-
-
-def input_pass_building():
-    root_input_pass = Tk()
-    root_input_pass.geometry("400x200")
-    l_input_pass = Label(root_input_pass, text='途径地点：')
-    l_input_pass.grid(row=0, sticky=W)
-    e_input_pass = Entry(root_input_pass)
-    e_input_pass.grid(row=0, column=1, sticky=E)
-
-    def add_pass():
-        pass_building.append(e_input_pass.get())
-        tkinter.messagebox.askokcancel(title='添加', message='添加成功！')
-    b_add_pass = Button(root_input_pass, text='添加', command=add_pass)
-    b_add_pass.grid(row=0, column=2)
-
-    def jump_to_navigate():
-        root_input_pass.destroy()
-        navigator_one_campus()
-    b_jump = Button(root_input_pass, text='确定', command=jump_to_navigate)
-    b_jump.grid(row=0, column=3)
-    return
-
-
-def between_campus_simulate(bus_choice):
-    idx = 0
-    for i in bus_table[bus_choice].time:
-        if i > student.time:
-            break
-        else:
-            idx += 1
-    wait_time = str(bus_table[bus_choice].time[idx]-student.time)
-    #等待状态(包含等车和在车上的时间)
-    time_count(wait_time, "车已到达!", bus_table[bus_choice].time_cost)
-    #改变student的时间
-
-    return
-
-
-def to_s(t):
-    h, m, s = t.strip().split(":")
-    return int(h) * 3600 + int(m) * 60 + int(s)
-
-
-def time_count(delta_time, show_msg, time_cost):
-    print(delta_time)
-    root_navigator_tmp = Tk()
-    root_navigator_tmp.title("倒计时")
-    root_navigator_tmp.geometry("400x200")
-    time_sec = to_s(delta_time)
-    all_time = Label(root_navigator_tmp, text='总计时间：'+str(delta_time))
-    all_time.grid(row=0, column=0)
-
-    def foo(times):
-        times = times - 1
-        clock = but.after(1000, foo, times)
-        if times == 0:
-            but.after_cancel(clock)
-            tkinter.messagebox.askokcancel(title='到达', message=show_msg)
-            if time_cost != 0:
-                minute, second = (time_cost // 60, time_cost % 60)
-                hour = 0
-                if minute > 60:
-                    hour, minute = (minute // 60, minute % 60)
-                time_count(str(hour) + ":" + str(minute) + ":" + str(second), "已到站", 0)
-            root_navigator_tmp.destroy()
-        else:
-            minute, second = (times // 60, times % 60)
-            hour = 0
-            if minute > 60:
-                hour, minute = (minute // 60, minute % 60)
-            but["text"] = '剩余时间：'+str(hour)+":"+str(minute)+":"+str(second)
-    but = Button(root_navigator_tmp, text="", width=20)
-    but.grid(row=1, column=0)
-    foo(time_sec)
-    return

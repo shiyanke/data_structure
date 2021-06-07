@@ -66,15 +66,16 @@ class Campus:
 
 point_size = 3
 font_type = '微软雅黑'
-gap = 10
+gap = 15
 adjacent_distance = 150
-node_numbers = [0, 109]
-road_numbers = [0, 130]
-building_numbers = [0, 90]
+node_numbers = [77, 109]
+road_numbers = [89, 130]
+building_numbers = [42, 90]
 campus = []
 root = Tk()
 root.geometry("400x200")  # 设置选项窗口大小
-student = Student("test1", Position(45, 452.5), "2021.4.3", "", "", Position(317, 427.5), Position(355, 480), 1, 1)
+student = Student("test1", Position(45, 452.5), "2021.4.3", "", "", Position(215, 290), Position(152.5, 267.5), 1, 1)
 path = []  # 路径
 pass_building = []  # 途径建筑
 bus_table = []  #车次表
+road = []  #路径

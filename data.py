@@ -79,3 +79,4 @@ path = []  # 路径
 pass_building = []  # 途径建筑
 bus_table = []  #车次表
 road = []  #路径
+speed = [0.5, 0.1]  #左边为步行比例，右边为自行车比例

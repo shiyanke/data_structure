@@ -65,8 +65,23 @@ def navigator_mode():
     else:
         print("起点终点在不同校区内")
         #输入校区间乘坐交通工具的选择
-        bus_choice = 0
-        navigator_two_campus(bus_choice)
+        root_navigator = Tk()
+        root_navigator.geometry("400x200")
+        radio = IntVar(root_navigator)
+        radio.set(0)
+        radio1 = Radiobutton(root_navigator, text="定点班车", variable=radio, value=0)
+        radio1.grid(row=0, column=0)
+        radio2 = Radiobutton(root_navigator, text="公共汽车", variable=radio, value=1)
+        radio2.grid(row=0, column=1)
+
+        def submit():
+            bus_choice = radio.get()
+            root_navigator.destroy()
+            navigator_two_campus(bus_choice, start[1], end[1])
+
+        b_submit = Button(root_navigator, text='确定', command=submit)
+        b_submit.grid(row=0, column=2)
+        root_navigator.mainloop()
 
     #for path_pass in path:
     #    print(path_pass)
@@ -100,13 +115,35 @@ def navigator_one_campus():
     #print("path road clear")
     return
 
-def navigator_two_campus(bus_choice):
-    #第一地点的输入处理（到距离最短的校门）
-    #校区内导航
+def navigator_two_campus(bus_choice, start_campus, end_campus):
+    #第一地点的输入处理（海淀区到东门，沙河校区到西门）
+    #东门Node(42, Position(400, 225))
+    #西门Node(1, Position(0, 130))
+    end_position = Position(student.end_position.x, student.end_position.y)
+    if start_campus == 0:
+        student.end = "西门"
+        student.end_position = Position(0, 130)
+    elif start_campus == 1:
+        student.end = "东门"
+        student.end_position = Position(400, 225)
+    # 校区内导航
+    path.clear()
+    student.which_campus = start_campus
+    navigator_one_campus()
     #校区间导航
     between_campus_simulate(bus_choice)
-    # 第二地点的输入处理（到距离最短的校门）
+    # 第二地点的输入处理（海淀区到东门，沙河校区到西门）
+    student.end_position = end_position
+    if end_campus == 0:
+        student.start = "西门"
+        student.start_position = Position(0, 130)
+    elif end_campus == 1:
+        student.start = "东门"
+        student.start_position = Position(400, 225)
     # 校区内导航
+    path.clear()
+    student.which_campus = end_campus
+    navigator_one_campus()
     return
 
 def search_point(s):#返回入口与一个校区
@@ -161,14 +198,16 @@ def between_campus_simulate(bus_choice):
             idx += 1
     wait_time = str(bus_table[bus_choice].time[idx]-student.time)
     #等待状态(包含等车和在车上的时间)
-    time_count(wait_time, "车已到达!", bus_table[bus_choice].time_cost)
+    time_count(wait_time, "车已到站!", bus_table[bus_choice].time_cost)
     #改变student的时间
 
+    tkinter.messagebox.showwarning('等待中...', '请在车到站后点击确定')
     return
 
 def to_s(t):
     h, m, s = t.strip().split(":")
     return int(h) * 3600 + int(m) * 60 + int(s)
+
 
 def time_count(delta_time, show_msg, time_cost):
     print(delta_time)
@@ -190,8 +229,11 @@ def time_count(delta_time, show_msg, time_cost):
                 hour = 0
                 if minute > 60:
                     hour, minute = (minute // 60, minute % 60)
-                time_count(str(hour) + ":" + str(minute) + ":" + str(second), "已到站", 0)
+                root_navigator_tmp.destroy()
+                time_count(str(hour) + ":" + str(minute) + ":" + str(second), "车已到达校区", 0)
+                return
             root_navigator_tmp.destroy()
+            return
         else:
             minute, second = (times // 60, times % 60)
             hour = 0

@@ -81,6 +81,11 @@ def imaging_path(one_campus, path,road):
         print((road[j].length//road[j].degree_of_congestion)*0.01)
         canvas.create_line(path[j].position.x + gap, path[j].position.y + gap, path[j+1].position.x + gap, path[j+1].position.y + gap, fill="#ff0000")
         map_root.update()  # 更新框架，强制显示改变
+        #导航结束后退出（暂时）
+        if j == len(path) - 2:
+            map_root.destroy()
+            return
+
 
     map_root.mainloop()
     #print("绘制结束，跳出mainloop")

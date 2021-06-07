@@ -590,8 +590,10 @@ def initialize_bus():
     time_list1.append(datetime.datetime(year, month, day, 7, 00, 00))
     time_list1.append(datetime.datetime(year, month, day, 7, 30, 00))
     #时间表添加
-    bus_table.append(Bus(0, time_list1, 10, 10))
+    bus_table.append(Bus(0, time_list1, 10, 3))
     time_list2 = []
+    time_list2.append(datetime.datetime(year, month, day, 7, 00, 00))
+    time_list2.append(datetime.datetime(year, month, day, 7, 30, 10))
     #时间表添加
     bus_table.append(Bus(1, time_list2, 2000, 15))
     return

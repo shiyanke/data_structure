@@ -69,7 +69,10 @@ def building_around_button(map_root, canvas):
         navigate.navigator_one_campus()
     #生成可点击文本组件
     for index, building in enumerate(near_building):
-        Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 300, y=building[1].y + gap, anchor='center')
+        if student.which_campus == 1:
+            Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 300, y=building[1].y + gap, anchor='center')
+        elif student.which_campus == 0:
+            Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 200, y=building[1].y + gap, anchor='center')
     canvas.pack()
     map_root.mainloop()
     return

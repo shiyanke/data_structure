@@ -197,16 +197,14 @@ def search_point(s):#返回入口与一个校区
 
     for element in campus[0].building:
         if s == element.name or s in element.nickname:
-            judge = 1
+            judge += 1
             break
     for element in campus[1].building:
         if s == element.name or s in element.nickname:
-            judge = 0
+            judge += 1
             break
-        else:
-            judge = 1
 
-    if judge == 0:
+    if judge == 2:
         print("出现重名")
         list.append(Position(-1, -1))
         list.append(-2)
@@ -283,9 +281,9 @@ def time_count(delta_time, show_msg, time_cost):
     all_time.grid(row=0, column=0)
 
     def foo(times):
-        times = times - 1
+        times = times - time_ratio_between
         clock = but.after(1000, foo, times)
-        if times == 0:
+        if times <= 0:
             but.after_cancel(clock)
             tkinter.messagebox.askokcancel(title='到达', message=show_msg)
             if time_cost != 0:

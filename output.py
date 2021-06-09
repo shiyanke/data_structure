@@ -101,7 +101,7 @@ def imaging_path(one_campus, path, road):
 
     for j in range(len(path)-1):
         time.sleep((road[j].length//road[j].degree_of_congestion)//1.2//6)
-        student.need_time = student.need_time + ((road[j].length//road[j].degree_of_congestion)//1.2)//60
+        #student.need_time = student.need_time + ((road[j].length//road[j].degree_of_congestion)//1.2)//60
         #print((road[j].length//road[j].degree_of_congestion)*0.1)
         student.position = path[j].position
         canvas.create_line(path[j].position.x + gap, path[j].position.y + gap, path[j+1].position.x + gap, path[j+1].position.y + gap, fill="#ff0000")

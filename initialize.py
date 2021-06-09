@@ -499,7 +499,7 @@ def initialize_map():
     campus_haidian.building.append(Building(16, "北京交通大学附属中学", Position(295.5, 552.5), [], [], "h", 7))
     campus_haidian.building.append(Building(17, "明光楼出版社", Position(365, 535), [Node(10, Position(355, 480))], [], "v", 7))
     campus_haidian.building.append(Building(18, "家属区", Position(355, 452.5), [], [], "v", 7))
-    campus_haidian.building.append(Building(19, "体育场", Position(355, 372.5), [Node(37, Position(325, 350))], [], "v", 9))
+    campus_haidian.building.append(Building(19, "体育场", Position(355, 372.5), [Node(37, Position(325, 350))], ["运动场"], "v", 9))
     campus_haidian.building.append(Building(20, "全名健身", Position(345, 310), [], [], "v", 5))
     campus_haidian.building.append(Building(21, "科学会堂", Position(300, 325), [Node(34, Position(275, 337.5)), Node(35, Position(300, 290))], [], "v", 8))
     campus_haidian.building.append(Building(22, "烈士墓", Position(315, 358.75), [], [], "h", 4))
@@ -580,12 +580,12 @@ def initialize_map():
 def initialize_student():
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     student.star_time = datetime.datetime.strptime(now, '%Y-%m-%d %H:%M:%S')
-    #student.time = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 29, 55)
     student.time = student.star_time
     return
 
 
 def initialize_bus():
+    # 0为定点班车，1为公共汽车
     year = datetime.datetime.now().year
     month = datetime.datetime.now().month
     day = datetime.datetime.now().day

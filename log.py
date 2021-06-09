@@ -23,7 +23,7 @@ def show_log():
     root = Tk()
     sb = Scrollbar(root)
     sb.pack(side=RIGHT, fill=Y)
-    lb = Listbox(root, width=60, height=20, yscrollcommand=sb.set)
+    lb = Listbox(root, width=100, height=20, yscrollcommand=sb.set)
     for line in log_file.readlines():
         lb.insert(END, line)
     lb.pack(side=LEFT, fill=BOTH)

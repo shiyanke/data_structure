@@ -37,7 +37,7 @@ class Road:
 
 
 class Student:
-    def __init__(self, ID, position, time, start_time, start, end, start_position, end_position, strategy, which_campus, query_time):
+    def __init__(self, ID, position, start_time, time, start, end, start_position, end_position, strategy, which_campus):
         self.ID = ID  #""
         self.position = position
         self.star_time = start_time
@@ -48,8 +48,6 @@ class Student:
         self.end_position = end_position
         self.strategy = strategy  #导航策略
         self.which_campus = which_campus  #当前所处校区0为沙河1为海淀
-        self.query_time = query_time
-
 
 
 class Bus:
@@ -77,14 +75,12 @@ building_numbers = [42, 90]
 campus = []
 root = Tk()
 root.geometry("400x200")  # 设置选项窗口大小
-student = Student("test1", Position(45, 452.5), "2021.4.3", "", "", Position(215, 290), Position(152.5, 267.5), 1, 1, (), 0)
+student = Student("test1", Position(45, 452.5), "", "", "", "", Position(215, 290), Position(152.5, 267.5), 1, 1)
 path = []  # 路径
 pass_building = []  # 途径建筑
 bus_table = []  #车次表
-road = []  #路径
-speed = [0.5, 0.1]  #左边为步行比例，右边为自行车比例
-#now_time = ()
-request_time = ()
-switch = 0
+rd = []  #路径
+speed = [1.2, 5]  #左边为步行比例，右边为自行车比例
+distance_ratio = [20, 25]
 time_ratio_one = 10
 time_ratio_between = 60

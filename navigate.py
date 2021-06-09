@@ -6,8 +6,8 @@ import output as out
 import tkinter.messagebox
 import query
 import copy
-import datetime
-import time
+import log
+
 
 def navigate():
     print("in navigate")
@@ -39,8 +39,12 @@ def navigate():
         student.end = e_end.get()
         student.strategy = radio.get()
         root_navigator.destroy()
+
+        log.flush_time()
+        log.save_log([str(student.time), "导航输入", "起始点："+student.start, "终止点："+student.end, "导航策略："+str(student.strategy)])
+
         if student.strategy in [1, 2, 3]:
-            navigator_mode()
+            navigator_building_judge()
         elif student.strategy == 4:
             input_pass_building()
 
@@ -49,12 +53,10 @@ def navigate():
     root_navigator.mainloop()
     return
 
-#def change_navigate():
 
-def navigator_mode():
+def navigator_building_judge():
     start = search_point(student.start)
     end = search_point(student.end)
-    temp_list = []
     #root_start = Tk()
     #root_end = Tk()
     #判断输入点是否存在
@@ -66,33 +68,66 @@ def navigator_mode():
         root_alarm.mainloop()
         return
 
-    if (start[1] == -2):
+    def duplicate_button(root, text, end_or_start, status, st, ed):
+        temp_list = []
+        if text == "海淀":
+            for element in campus[1].building:
+                if end_or_start == element.name or end_or_start in element.nickname:
+                    temp_list.append(element.door[0])
+                    temp_list.append(1)
+        else:
+            for element in campus[0].building:
+                if end_or_start == element.name or end_or_start in element.nickname:
+                    temp_list.append(element.door[0])
+                    temp_list.append(0)
+        root.destroy()
+        if status == 0:
+            st = temp_list
+        elif status == 1:
+            ed = temp_list
+        if start[1] == -2 and end[1] == -2:
+            start[1] = 0
+            root_end_two = Tk()
+            root_end_two.geometry("400x200")
+            wd = Message(root_end_two, text="终点校区建筑重名\n请选择校区", font=('Helvetica', '10'))
+            wd.pack()
+            haidian_bt = Button(root_end_two, text="海淀", command=lambda: duplicate_button(root_end_two, "海淀", student.end, 1, st, ed))
+            shahe_bt = Button(root_end_two, text="沙河", command=lambda: duplicate_button(root_end_two, "沙河", student.end, 1, st, ed))
+            haidian_bt.pack()
+            shahe_bt.pack()
+            root_end_two.mainloop()
+        else:
+            navigator_mode(st, ed)
+        return
+
+    if start[1] == -2:
         root_start = Tk()
         root_start.geometry("400x200")
         word = Message(root_start, text="起点校区建筑重名\n请选择校区", font=('Helvetica', '10'))
         word.pack()
-        haidian_button = Button(root_start, text="海淀", command=lambda:duplicate_button(root_start, "海淀", student.start, temp_list))
-        shahe_button = Button(root_start, text="沙河", command=lambda:duplicate_button(root_start, "沙河", student.start, temp_list))
-        start = temp_list
+        haidian_button = Button(root_start, text="海淀", command=lambda:duplicate_button(root_start, "海淀", student.start, 0, start, end))
+        shahe_button = Button(root_start, text="沙河", command=lambda:duplicate_button(root_start, "沙河", student.start, 0, start, end))
+        #start = temp_list
         haidian_button.pack()
         shahe_button.pack()
         root_start.mainloop()
-        print("sadddddddddddddd")
 
-    if (end[1] == -2):
+    elif end[1] == -2:
         root_end = Tk()
         root_end.geometry("400x200")
         word = Message(root_end, text="终点校区建筑重名\n请选择校区", font=('Helvetica', '10'))
         word.pack()
-        haidian_button = Button(root_end, text="海淀", command=lambda:duplicate_button(root_end, "海淀", student.end, temp_list))
-        shahe_button = Button(root_end, text="沙河", command=lambda:duplicate_button(root_end, "沙河", student.end, temp_list))
-        end = temp_list
-        
+        haidian_button = Button(root_end, text="海淀", command=lambda:duplicate_button(root_end, "海淀", student.end, 1, start, end))
+        shahe_button = Button(root_end, text="沙河", command=lambda:duplicate_button(root_end, "沙河", student.end, 1, start, end))
+        #end = temp_list
         haidian_button.pack()
         shahe_button.pack()
         root_end.mainloop()
-        print("sadddddddddddddd")
+    else:
+        navigator_mode(start, end)
 
+
+def navigator_mode(start, end):
     student.start_position = start[0].position
     student.end_position = end[0].position
 
@@ -115,35 +150,23 @@ def navigator_mode():
         def submit():
             bus_choice = radio.get()
             root_navigator.destroy()
+            log.flush_time()
+            if bus_choice == 0:
+                log.save_log([str(student.time), "选择校区间通行交通工具：定点班车"])
+            elif bus_choice == 1:
+                log.save_log([str(student.time), "选择校区间通行交通工具：公共汽车"])
+            log.save_log([str(student.time), "开始校区间通行"])
             navigator_two_campus(bus_choice, start[1], end[1])
 
         b_submit = Button(root_navigator, text='确定', command=submit)
         b_submit.grid(row=0, column=2)
         root_navigator.mainloop()
-    #root_start.mainloop()
-    #root_end.mainloop()
 
-def duplicate_button(root, text, end_or_start, temp_list):
-    if text == "海淀":
-        for element in campus[1].building:
-            if end_or_start == element.name or end_or_start in element.nickname:
-                temp_list.append(element.door[0])
-                temp_list.append(1)
-    else:
-        for element in campus[0].building:
-            if end_or_start == element.name or end_or_start in element.nickname:
-                temp_list.append(element.door[0])
-                temp_list.append(0)
-    root.destroy()
-    return
 
 def navigator_one_campus():
-    print(student.start)
-    print(student.start_position)
-    print(student.end)
-    print(student.end_position)
-    print(student.strategy)
-
+    log.flush_time()
+    log.save_log([str(student.time), "开始校区内通行"])
+    rd.clear()
     if student.strategy in [1, 2, 3]:
         shortest_path_incampus_method1(student.strategy)
     elif student.strategy == 4:
@@ -152,14 +175,26 @@ def navigator_one_campus():
     for j in range(len(path) - 1):
         for road_pass in campus[student.which_campus].road:
             if (path[j] in road_pass.endpoint) and (path[j + 1] in road_pass.endpoint):
-                road.append(road_pass)
+                rd.append(road_pass)
                 break
 
-    out.imaging_path(campus[student.which_campus], path, road)
+    out.imaging_path(campus[student.which_campus], path, rd)
 
     return
 
 def navigator_two_campus(bus_choice, start_campus, end_campus):
+    #检测是否有车
+    idx = 0
+    for i in bus_table[bus_choice].time:
+        if i > student.time:
+            break
+        else:
+            idx += 1
+    if idx == len(bus_table[bus_choice].time):
+        tkinter.messagebox.showwarning('无车！', '当日已无车')
+        log.flush_time()
+        log.save_log([str(student.time), "当日已无车"])
+        return
     #第一地点的输入处理（海淀区到东门，沙河校区到西门）
     #东门Node(42, Position(400, 225))
     #西门Node(1, Position(0, 130))
@@ -175,7 +210,11 @@ def navigator_two_campus(bus_choice, start_campus, end_campus):
     student.which_campus = start_campus
     navigator_one_campus()
     #校区间导航
+    log.flush_time()
+    log.save_log([str(student.time), "校区间通行中"])
     between_campus_simulate(bus_choice)
+    log.flush_time()
+    log.save_log([str(student.time), "已到达另一校区"])
     # 第二地点的输入处理（海淀区到东门，沙河校区到西门）
     student.end_position = end_position
     if end_campus == 0:
@@ -246,7 +285,13 @@ def input_pass_building():
 
     def jump_to_navigate():
         root_input_pass.destroy()
-        navigator_one_campus()
+        log.flush_time()
+        temp = []
+        temp.append(str(student.time))
+        temp.append("添加途径地点")
+        temp.extend(pass_building)
+        log.save_log(temp)
+        navigator_building_judge()
 
     b_jump = Button(root_input_pass, text='确定', command=jump_to_navigate)
     b_jump.grid(row=0, column=3)
@@ -309,9 +354,13 @@ def time_count(delta_time, show_msg, time_cost):
 
 def shortest_path_incampus_method1(method):#传参数 method
     '''传参数1.最短路径 2.最短时间 3.最短自行车时间'''
+    if student.start_position.x == student.end_position.x and student.start_position.y == student.end_position.y:
+        path.clear()
+        return
     node_end = Node(0, Position(0, 0))
     node_start = Node(0, Position(0, 0))
     flag = 0
+    road_index = 0
     node_number = node_numbers[student.which_campus]
     for node in campus[student.which_campus].node:
         if node.position.x == student.end_position.x and node.position.y == student.end_position.y:
@@ -328,6 +377,7 @@ def shortest_path_incampus_method1(method):#传参数 method
         for road in campus[student.which_campus].road:
             if  (road.endpoint[0].position.x-node_start.position.x)*(road.endpoint[1].position.x-node_start.position.x)<=0.001 and (road.endpoint[0].position.y-node_start.position.y)*(road.endpoint[1].position.y-node_start.position.y)<=0.001 and math.isclose((road.endpoint[0].position.y-node_start.position.y)*(node_start.position.x-road.endpoint[1].position.x), (node_start.position.y-road.endpoint[1].position.y)*(road.endpoint[0].position.x-node_start.position.x), rel_tol=0.001):
                 road_store = road
+                road_index = road.number
                 campus[student.which_campus].road.append(Road(131, [road.endpoint[0], node_start], road.degree_of_congestion , ((road.endpoint[0].position.x - node_start.position.x) ** 2 + (road.endpoint[0].position.y - node_start.position.y) ** 2) ** 0.5, road.if_bike))
                 campus[student.which_campus].road.append(Road(132, [road.endpoint[1], node_start], road.degree_of_congestion , ((road.endpoint[1].position.x - node_start.position.x) ** 2 + (road.endpoint[1].position.y - node_start.position.y) ** 2) ** 0.5, road.if_bike))
                 campus[student.which_campus].road.remove(road)
@@ -428,9 +478,13 @@ def shortest_path_incampus_method1(method):#传参数 method
         path.extend(list(reversed(temp_path)))
         path.append(node_end)
         if flag == 0:
+            if path[1] in campus[student.which_campus].road[len(campus[student.which_campus].road)-1].endpoint:
+                rd.append(campus[student.which_campus].road[len(campus[student.which_campus].road)-1])
+            if path[1] in campus[student.which_campus].road[len(campus[student.which_campus].road)-2].endpoint:
+                rd.append(campus[student.which_campus].road[len(campus[student.which_campus].road)-2])
             campus[student.which_campus].road.pop()
             campus[student.which_campus].road.pop()
-            campus[student.which_campus].road.append(road_store)
+            campus[student.which_campus].road.insert(road_index, road_store)
             campus[student.which_campus].node.pop()
     else:
         path.clear()

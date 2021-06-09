@@ -2,25 +2,58 @@ from tkinter import *
 from data import *
 import output as out
 import navigate
+import log
+switch = 0
 
 def query():
     print("in query")
     root_query = Tk()
     root_query.geometry("400x200")  # 设置窗口大小
-
-    #location_button = Button(root_query, text="查询所处位置", command=lambda:location(root))
-    #building_around_button = Button(root_query, text="查询周围建筑及其最短距离", command=building_around)
-    #location_button.pack()
-    #building_around_button.pack()
+    location_button = Button(root_query, text="查询所处位置", command=lambda:draw_self_pos(campus[student.which_campus]))
+    bding_around_button = Button(root_query, text="查询周围建筑及其最短距离", command=building_around)
+    location_button.pack()
+    bding_around_button.pack()
     root_query.mainloop()
     return
 
-def location(map_root, canvas):
+def draw_self_pos(one_campus):
+    log.flush_time()
+    log.save_log([str(student.time), "查询当前位置", "("+str(student.position.x)+","+str(student.position.y)+")"])
+
+    map_root = Tk()
+    map_root.geometry("1000x600")  # 设置地图窗口大小
+    canvas = Canvas(map_root, bg='white')
+    canvas.config(width=600 + 2 * gap, height=600 + 2 * gap)  # 画布大小
+    #节点（出入口、路口）、路、建筑物
+    points = one_campus.node
+    roads = one_campus.road
+    buildings = one_campus.building
+    for j in points:
+        out.paint_point(canvas, j.position.x + gap, j.position.y + gap)
+    for j in roads:
+        canvas.create_line(j.endpoint[0].position.x + gap, j.endpoint[0].position.y + gap, j.endpoint[1].position.x + gap, j.endpoint[1].position.y + gap, fill="#808080")
+    for j in buildings:
+        if j.direction == "v":
+            canvas.create_text((j.position.x + gap, j.position.y + gap), font=(font_type, j.size), text="\n".join(j.name), fill="#000000", anchor='center')
+        elif j.direction == "h":
+            canvas.create_text((j.position.x + gap, j.position.y + gap), font=(font_type, j.size), text=j.name, fill="#000000", anchor='center')
     out.paint_point(canvas, student.position.x + gap, student.position.y + gap, color='#FFFF00')
-    global  switch
+    canvas.pack()
+    map_root.mainloop()
+    return
+
+def location(map_root, canvas):
+    log.flush_time()
+    log.save_log([str(student.time), "查询当前位置", "("+str(student.position.x)+","+str(student.position.y)+")"])
+
+    out.paint_point(canvas, student.position.x + gap, student.position.y + gap, color='#FFFF00')
+    global switch
     switch = 1
-#    return
+
 def building_around_button(map_root, canvas):
+    log.flush_time()
+    log.save_log([str(student.time), "查询周围建筑"])
+
     global switch
     switch = 1
     #生成出如口列表
@@ -62,15 +95,19 @@ def building_around_button(map_root, canvas):
     #跳转模拟导航触发函数
     def to_navigate(index):
         path.clear()
+
         student.start_position = student.position
         student.end_position = near_building[index][2].position
-        navigate.shortest_path_incampus_method1()
         map_root.destroy()
-        navigate.navigator_one_campus()
+
+        log.flush_time()
+        log.save_log([str(student.time), "导航", "起点：当前位置", "终点："+near_building[index][0]])
+
+        navigate.navigator_mode([Node(-1, student.start_position), student.which_campus], [Node(-1, student.end_position), student.which_campus])
     #生成可点击文本组件
     for index, building in enumerate(near_building):
         if student.which_campus == 1:
-            Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 300, y=building[1].y + gap, anchor='center')
+            Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 200, y=building[1].y + gap, anchor='center')
         elif student.which_campus == 0:
             Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 200, y=building[1].y + gap, anchor='center')
     canvas.pack()
@@ -78,6 +115,9 @@ def building_around_button(map_root, canvas):
     return
 
 def building_around():
+    log.flush_time()
+    log.save_log([str(student.time), "查询周围建筑"])
+
     map_root = Tk()
     map_root.geometry("1000x600")  # 设置地图窗口大小
     canvas = Canvas(map_root, bg='white')
@@ -103,6 +143,7 @@ def building_around():
         path.clear()
         student.start_position = student.position
         student.end_position = i.position
+        print(i.number)
         navigate.shortest_path_incampus_method1(student.strategy)
         if calculate_shotest_distance() > adjacent_distance:
             door.remove(i)
@@ -125,9 +166,12 @@ def building_around():
         path.clear()
         student.start_position = student.position
         student.end_position = near_building[index][2].position
-        navigate.shortest_path_incampus_method1()
         map_root.destroy()
-        navigate.navigator_one_campus()
+
+        log.flush_time()
+        log.save_log([str(student.time), "导航", "起点：当前位置", "终点："+near_building[index][0]])
+
+        navigate.navigator_mode([Node(-1, student.start_position), student.which_campus], [Node(-1, student.end_position), student.which_campus])
     #生成可点击文本组件
     for index, building in enumerate(near_building):
         Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 300, y=building[1].y + gap, anchor='center')

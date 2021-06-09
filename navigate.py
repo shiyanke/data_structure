@@ -47,17 +47,55 @@ def navigate():
     b_submit = Button(root_navigator, text='确定', command=submit)
     b_submit.grid(row=3, sticky=E)
     root_navigator.mainloop()
-    #print("asddasdasdasdasdasdasdas")
     return
+
+#def change_navigate():
 
 def navigator_mode():
     start = search_point(student.start)
     end = search_point(student.end)
+    temp_list = []
+    #root_start = Tk()
+    #root_end = Tk()
     #判断输入点是否存在
     if (start[1] == -1) or (end[1] == -1):
+        root_alarm = Tk()
+        root_alarm.geometry("400x200")
+        word = Message(root_alarm, text="输入无效\n请查询地图后重新输入", font=('Helvetica', '15'))
+        word.pack()
+        root_alarm.mainloop()
         return
+
+    if (start[1] == -2):
+        root_start = Tk()
+        root_start.geometry("400x200")
+        word = Message(root_start, text="起点校区建筑重名\n请选择校区", font=('Helvetica', '10'))
+        word.pack()
+        haidian_button = Button(root_start, text="海淀", command=lambda:duplicate_button(root_start, "海淀", student.start, temp_list))
+        shahe_button = Button(root_start, text="沙河", command=lambda:duplicate_button(root_start, "沙河", student.start, temp_list))
+        start = temp_list
+        haidian_button.pack()
+        shahe_button.pack()
+        root_start.mainloop()
+        print("sadddddddddddddd")
+
+    if (end[1] == -2):
+        root_end = Tk()
+        root_end.geometry("400x200")
+        word = Message(root_end, text="终点校区建筑重名\n请选择校区", font=('Helvetica', '10'))
+        word.pack()
+        haidian_button = Button(root_end, text="海淀", command=lambda:duplicate_button(root_end, "海淀", student.end, temp_list))
+        shahe_button = Button(root_end, text="沙河", command=lambda:duplicate_button(root_end, "沙河", student.end, temp_list))
+        end = temp_list
+        
+        haidian_button.pack()
+        shahe_button.pack()
+        root_end.mainloop()
+        print("sadddddddddddddd")
+
     student.start_position = start[0].position
     student.end_position = end[0].position
+
     if start[1] == end[1]:
         print("起点终点在同一校区内")
         student.which_campus = int(start[1])
@@ -82,9 +120,22 @@ def navigator_mode():
         b_submit = Button(root_navigator, text='确定', command=submit)
         b_submit.grid(row=0, column=2)
         root_navigator.mainloop()
+    #root_start.mainloop()
+    #root_end.mainloop()
 
-    #for path_pass in path:
-    #    print(path_pass)
+def duplicate_button(root, text, end_or_start, temp_list):
+    if text == "海淀":
+        for element in campus[1].building:
+            if end_or_start == element.name or end_or_start in element.nickname:
+                temp_list.append(element.door[0])
+                temp_list.append(1)
+    else:
+        for element in campus[0].building:
+            if end_or_start == element.name or end_or_start in element.nickname:
+                temp_list.append(element.door[0])
+                temp_list.append(0)
+    root.destroy()
+    return
 
 def navigator_one_campus():
     print(student.start)
@@ -92,8 +143,7 @@ def navigator_one_campus():
     print(student.end)
     print(student.end_position)
     print(student.strategy)
-    #print(pass_building)
-    #out.imaging(campus[0])
+
     if student.strategy in [1, 2, 3]:
         shortest_path_incampus_method1(student.strategy)
     elif student.strategy == 4:
@@ -104,15 +154,9 @@ def navigator_one_campus():
             if (path[j] in road_pass.endpoint) and (path[j + 1] in road_pass.endpoint):
                 road.append(road_pass)
                 break
-    #for j in road:
-    #    print(j.number)
-    s = 0
+
     out.imaging_path(campus[student.which_campus], path, road)
 
-    s = 1
-    path.clear()
-    road.clear()
-    #print("path road clear")
     return
 
 def navigator_two_campus(bus_choice, start_campus, end_campus):
@@ -148,6 +192,27 @@ def navigator_two_campus(bus_choice, start_campus, end_campus):
 
 def search_point(s):#返回入口与一个校区
     list = []
+    #检测是否为两校区共有地点
+    judge = 0
+
+    for element in campus[0].building:
+        if s == element.name or s in element.nickname:
+            judge = 1
+            break
+    for element in campus[1].building:
+        if s == element.name or s in element.nickname:
+            judge = 0
+            break
+        else:
+            judge = 1
+
+    if judge == 0:
+        print("出现重名")
+        list.append(Position(-1, -1))
+        list.append(-2)
+        return list
+    else:
+        print("未出现重名")
     #遍历沙河
     for element in campus[0].building:
         if s == element.name or s in element.nickname:
@@ -207,7 +272,6 @@ def between_campus_simulate(bus_choice):
 def to_s(t):
     h, m, s = t.strip().split(":")
     return int(h) * 3600 + int(m) * 60 + int(s)
-
 
 def time_count(delta_time, show_msg, time_cost):
     print(delta_time)

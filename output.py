@@ -109,8 +109,8 @@ def imaging_path(one_campus, path, road):
     location_button.pack()
     around_button.pack()
     query.switch = 0
+
     for j in range(len(path)-1):
-        #pause()
         if query.switch == 1:
             #map_root.destroy()
             return
@@ -136,6 +136,7 @@ def imaging_path(one_campus, path, road):
             tkinter.messagebox.showinfo(title='提示', message='已到达，目的地在您附近')
             #map_root.destroy()
             return
+
 
     print("已经跳出")
     map_root.mainloop()

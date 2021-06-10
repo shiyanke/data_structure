@@ -54,6 +54,7 @@ def building_around_button(map_root, canvas):
     log.flush_time()
     log.save_log([str(student.time), "查询周围建筑"])
 
+    student.strategy = 1
     global switch
     switch = 1
     #生成出如口列表
@@ -118,10 +119,11 @@ def building_around():
     log.flush_time()
     log.save_log([str(student.time), "查询周围建筑"])
 
+    student.strategy = 1
     map_root = Tk()
-    map_root.geometry("1000x600")  # 设置地图窗口大小
+    map_root.geometry("1000x1000")  # 设置地图窗口大小
     canvas = Canvas(map_root, bg='white')
-    canvas.config(width=400 + 2 * gap, height=575 + 2 * gap)  # 画布大小
+    canvas.config(width=600 + 2 * gap, height=600 + 2 * gap)  # 画布大小
     out.fill_campus_canvas(canvas, campus[student.which_campus])
 
     #生成出如口列表
@@ -174,7 +176,10 @@ def building_around():
         navigate.navigator_mode([Node(-1, student.start_position), student.which_campus], [Node(-1, student.end_position), student.which_campus])
     #生成可点击文本组件
     for index, building in enumerate(near_building):
-        Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 300, y=building[1].y + gap, anchor='center')
+        if student.which_campus == 1:
+            Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 200, y=building[1].y + gap, anchor='center')
+        elif student.which_campus == 0:
+            Button(map_root, text=building[0], foreground='#FF0000', command=lambda idx=index: to_navigate(idx)).place(x=building[1].x + 200, y=building[1].y + gap, anchor='center')
     canvas.pack()
     map_root.mainloop()
     return

@@ -177,24 +177,14 @@ def navigator_one_campus():
             if (path[j] in road_pass.endpoint) and (path[j + 1] in road_pass.endpoint):
                 rd.append(road_pass)
                 break
-
-    out.imaging_path(campus[student.which_campus], path, rd)
+    if path == []:
+        tkinter.messagebox.showerror('错误', '该策略下无法到达')
+    else:
+        out.imaging_path(campus[student.which_campus], path, rd)
 
     return
 
 def navigator_two_campus(bus_choice, start_campus, end_campus):
-    #检测是否有车
-    idx = 0
-    for i in bus_table[bus_choice].time:
-        if i > student.time:
-            break
-        else:
-            idx += 1
-    if idx == len(bus_table[bus_choice].time):
-        tkinter.messagebox.showwarning('无车！', '当日已无车')
-        log.flush_time()
-        log.save_log([str(student.time), "当日已无车"])
-        return
     #第一地点的输入处理（海淀区到东门，沙河校区到西门）
     #东门Node(42, Position(400, 225))
     #西门Node(1, Position(0, 130))
@@ -212,6 +202,18 @@ def navigator_two_campus(bus_choice, start_campus, end_campus):
     #校区间导航
     log.flush_time()
     log.save_log([str(student.time), "校区间通行中"])
+    #检测是否有车
+    idx = 0
+    for i in bus_table[bus_choice].time:
+        if i > student.time:
+            break
+        else:
+            idx += 1
+    if idx == len(bus_table[bus_choice].time):
+        tkinter.messagebox.showwarning('无车！', '当日已无车')
+        log.flush_time()
+        log.save_log([str(student.time), "当日已无车"])
+        return
     between_campus_simulate(bus_choice)
     log.flush_time()
     log.save_log([str(student.time), "已到达另一校区"])
@@ -245,7 +247,7 @@ def search_point(s):#返回入口与一个校区
 
     if judge == 2:
         print("出现重名")
-        list.append(Position(-1, -1))
+        list.append(Node(-2, Position(-1, -1)))
         list.append(-2)
         return list
     else:
@@ -264,7 +266,7 @@ def search_point(s):#返回入口与一个校区
             return list
 
     print("起点或终点输入无效，请重新输入")
-    list.append(Position(-1, -1))
+    list.append(Node(-1, Position(-1, -1)))
     list.append(-1)
     return list
 
@@ -353,6 +355,7 @@ def time_count(delta_time, show_msg, time_cost):
     return
 
 def shortest_path_incampus_method1(method):#传参数 method
+    path.clear()
     '''传参数1.最短路径 2.最短时间 3.最短自行车时间'''
     if student.start_position.x == student.end_position.x and student.start_position.y == student.end_position.y:
         path.clear()
@@ -491,6 +494,16 @@ def shortest_path_incampus_method1(method):#传参数 method
     return
 
 def shortest_passing_by():
+    def search_p(ss, which):
+        lt = []
+        # 遍历
+        for element in campus[which].building:
+            if ss == element.name or ss in element.nickname:
+                lt.append(element.door[0])
+                lt.append(which)
+                return lt
+        return lt
+    path.clear()
     pass_node = []
     start_head = student.start_position
     start_tail = student.end_position
@@ -500,7 +513,8 @@ def shortest_passing_by():
     path_get_frhead = []
     path_get_frtail = []
     for s in pass_building:
-        pass_node.append(search_point(s)[0])
+        temp = search_p(s,student.which_campus)
+        pass_node.append(temp[0])
     while pass_node != []:
         student.start_position = start_head
         for node in pass_node:
